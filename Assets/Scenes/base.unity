@@ -188,7 +188,7 @@ GameObject:
   - component: {fileID: 1144055469}
   - component: {fileID: 1144055468}
   m_Layer: 0
-  m_Name: world
+  m_Name: chunk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -202,16 +202,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1144055467}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59c03d36e8903f44eaa7b9e8d85fcf19, type: 3}
+  m_Script: {fileID: 11500000, guid: a126295b09808a84cb6b6ed9f89d71a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeMaterial: {fileID: 2100000, guid: d160876192165fd4f940ea22ab8311d9, type: 2}
-  width: 2
-  height: 2
-  depth: 2
   tilesetWidth: 32
   tilesetDimension: 512
-  tilesetIndex: 224
+  tilesetIndex: 240
+  material: {fileID: 2100000, guid: d160876192165fd4f940ea22ab8311d9, type: 2}
 --- !u!4 &1144055469
 Transform:
   m_ObjectHideFlags: 0
@@ -237,6 +234,7 @@ GameObject:
   - component: {fileID: 1727069181}
   - component: {fileID: 1727069180}
   - component: {fileID: 1727069179}
+  - component: {fileID: 1727069184}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -318,3 +316,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1727069184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1727069178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5baee675a6c55e408e223dbf561b9ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  targetOffset: {x: 0, y: 0, z: 0}
+  distance: 5
+  maxDistance: 100
+  minDistance: 0.6
+  xSpeed: 200
+  ySpeed: 200
+  yMinLimit: -80
+  yMaxLimit: 80
+  zoomRate: 40
+  panSpeed: 0.3
+  zoomDampening: 5
