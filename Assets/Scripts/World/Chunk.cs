@@ -13,16 +13,12 @@ public class Chunk : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        StartCoroutine(build(16,8,16));
+        StartCoroutine(buildData(32,8,32));
     }
 
-    public IEnumerator build( int width, int height, int depth)
+    public IEnumerator buildData( int width, int height, int depth)
     {
         blocks = new Block[width, height, depth];
-        
-        Mesh chunkMesh = new Mesh();
-        List<CombineInstance> blockMeshes = new List<CombineInstance>();
-
         for (int z = 0; z < depth; z++)
         {
             for (int y = 0; y < height; y++)
@@ -36,6 +32,14 @@ public class Chunk : MonoBehaviour {
             }
         }
 
+        buildMesh(width, height, depth);
+
+        yield return null;
+    }
+
+    private void buildMesh(int width, int height, int depth)
+    {
+        List<CombineInstance> blockMeshes = new List<CombineInstance>();
         for (int z = 0; z < depth; z++)
         {
             for (int y = 0; y < height; y++)
@@ -58,6 +62,7 @@ public class Chunk : MonoBehaviour {
             }
         }
 
+        Mesh chunkMesh = new Mesh();
         chunkMesh.name = "Chunk";
         chunkMesh.CombineMeshes(blockMeshes.ToArray());
         chunkMesh.RecalculateBounds();
@@ -65,7 +70,5 @@ public class Chunk : MonoBehaviour {
         gameObject.AddComponent<MeshRenderer>().material = material;
         MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
         meshFilter.mesh = chunkMesh;
-
-        yield return null;
     }
 }

@@ -7,7 +7,6 @@ using UnityEngine;
 /// </summary>
 public class Block
 {
-    private float tilesizeUV;
     public Vector3 Position { get; private set; }
     public bool IsSolid { get; set; }
 
@@ -19,26 +18,25 @@ public class Block
 
     public Mesh build(Block[,,] blocks, Vector3 chunkPosition, int tileIndex, float tileSizeNormalized)
     {
-        tilesizeUV = tileSizeNormalized;
         List<CombineInstance> combineList = new List<CombineInstance>();
 
         if(!hasSolidNeightbour(blocks, (int)Position.x, (int)Position.y, (int)Position.z - 1))
-            combineList.Add(createQuad(chunkPosition, Vector3.back, tileIndex));
+            combineList.Add(createQuad(chunkPosition, Vector3.back, tileIndex, tileSizeNormalized));
 
         if (!hasSolidNeightbour(blocks, (int)Position.x, (int)Position.y, (int)Position.z + 1))
-            combineList.Add(createQuad(chunkPosition, Vector3.forward, tileIndex));
+            combineList.Add(createQuad(chunkPosition, Vector3.forward, tileIndex, tileSizeNormalized));
 
         if (!hasSolidNeightbour(blocks, (int)Position.x - 1, (int)Position.y, (int)Position.z))
-            combineList.Add(createQuad(chunkPosition, Vector3.left, tileIndex));
+            combineList.Add(createQuad(chunkPosition, Vector3.left, tileIndex, tileSizeNormalized));
 
         if (!hasSolidNeightbour(blocks, (int)Position.x + 1, (int)Position.y, (int)Position.z))
-            combineList.Add(createQuad(chunkPosition, Vector3.right, tileIndex));
+            combineList.Add(createQuad(chunkPosition, Vector3.right, tileIndex, tileSizeNormalized));
 
         if (!hasSolidNeightbour(blocks, (int)Position.x, (int)Position.y - 1, (int)Position.z))
-            combineList.Add(createQuad(chunkPosition, Vector3.down, tileIndex));
+            combineList.Add(createQuad(chunkPosition, Vector3.down, tileIndex, tileSizeNormalized));
 
         if (!hasSolidNeightbour(blocks, (int)Position.x, (int)Position.y + 1, (int)Position.z))
-            combineList.Add(createQuad(chunkPosition, Vector3.up, tileIndex));
+            combineList.Add(createQuad(chunkPosition, Vector3.up, tileIndex, tileSizeNormalized));
 
         if (combineList.Count <= 0)
             return null;
@@ -65,14 +63,14 @@ public class Block
         return false;
     }
 
-    private CombineInstance createQuad(Vector3 chunkPosition, Vector3 planeNormal, int tileIndex)
+    private CombineInstance createQuad(Vector3 chunkPosition, Vector3 planeNormal, int tileIndex, float tileSizeUv)
     {
         CombineInstance combine = new CombineInstance();
         combine.transform = Matrix4x4.Translate(chunkPosition) * Matrix4x4.Translate(Position);
         combine.mesh = new Mesh
         {
             vertices = createPositions(planeNormal),
-            uv = createUVArray(tileIndex),
+            uv = createUVArray(tileIndex, tileSizeUv),
 
             normals = new[]
             {
@@ -112,21 +110,21 @@ public class Block
     /// Unity uses anti-clockwise uv coordinate winding
     /// yeah i know hardcoded, cant be arsed.
     /// </summary>
-    private Vector2[] createUVArray(int tileIndex)
+    private Vector2[] createUVArray(int tileIndex, float tileSizeUV)
     {
         // n & 0xF == n % 16
-        float uvX = (tileIndex & 0xF) * tilesizeUV;
+        float uvX = (tileIndex & 0xF) * tileSizeUV;
 
         // n >> 4 == n / 16
         // 4 bits have 16 possibilities [0, 15]
-        float uvY = (tileIndex >> 4) * tilesizeUV;
+        float uvY = (tileIndex >> 4) * tileSizeUV;
 
         return new[]
         {
             new Vector2(uvX, uvY),
-            new Vector2(uvX, uvY + tilesizeUV),
-            new Vector2(uvX + tilesizeUV, uvY + tilesizeUV),
-            new Vector2(uvX + tilesizeUV, uvY)
+            new Vector2(uvX, uvY + tileSizeUV),
+            new Vector2(uvX + tileSizeUV, uvY + tileSizeUV),
+            new Vector2(uvX + tileSizeUV, uvY)
         };
     }
 }
