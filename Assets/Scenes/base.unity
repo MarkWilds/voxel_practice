@@ -188,7 +188,7 @@ GameObject:
   - component: {fileID: 1144055469}
   - component: {fileID: 1144055468}
   m_Layer: 0
-  m_Name: chunk
+  m_Name: World
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -202,13 +202,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1144055467}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a126295b09808a84cb6b6ed9f89d71a0, type: 3}
+  m_Script: {fileID: 11500000, guid: bffa3278a6f219843a24ed5ee789f2c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilesetWidth: 32
-  tilesetDimension: 512
-  tilesetIndex: 240
-  material: {fileID: 2100000, guid: d160876192165fd4f940ea22ab8311d9, type: 2}
+  chunkSizeHorizontal: 16
+  chunkSizeVertical: 16
+  chunkColums: 16
+  textureAtlas: {fileID: 2100000, guid: d160876192165fd4f940ea22ab8311d9, type: 2}
 --- !u!4 &1144055469
 Transform:
   m_ObjectHideFlags: 0

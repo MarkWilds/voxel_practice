@@ -2,28 +2,39 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Chunk : MonoBehaviour {
+public class Chunk {
     public int tilesetWidth = 16;
     public float tilesetDimension = 512.0f;
-    public int tilesetIndex = 0;
+    public int tilesetIndex = 250;
 
     private Block[,,] blocks;
-    public Material material;
+    private GameObject chunkGameObject;
+    private Material chunkMaterial;
 
-    // Use this for initialization
-    void Start()
+    public GameObject GameObject
     {
-        StartCoroutine(buildData(32,8,32));
+        get
+        {
+            return chunkGameObject;
+        }
     }
 
-    public IEnumerator buildData( int width, int height, int depth)
+    public Chunk(Vector3 position, Material material, int sizeHorizontal, int sizeVertical)
     {
-        blocks = new Block[width, height, depth];
-        for (int z = 0; z < depth; z++)
+        chunkGameObject = new GameObject(string.Format("{0}_{1}_{2}", position.x, position.y, position.z) );
+        chunkGameObject.transform.position = position;
+        chunkMaterial = material;
+        buildData(sizeHorizontal, sizeVertical);
+    }
+
+    private void buildData(int sizeHorizontal, int sizeVertical)
+    {
+        blocks = new Block[sizeHorizontal, sizeVertical, sizeHorizontal];
+        for (int z = 0; z < sizeHorizontal; z++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < sizeVertical; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < sizeHorizontal; x++)
                 {
                     Vector3 position = new Vector3(x, y, z);
                     Block newBlock = new Block(position, Random.value < 0.5f);
@@ -31,13 +42,9 @@ public class Chunk : MonoBehaviour {
                 }
             }
         }
-
-        buildMesh(width, height, depth);
-
-        yield return null;
     }
 
-    private void buildMesh(int width, int height, int depth)
+    public void buildMesh( int width, int height, int depth)
     {
         List<CombineInstance> blockMeshes = new List<CombineInstance>();
         for (int z = 0; z < depth; z++)
@@ -50,7 +57,7 @@ public class Chunk : MonoBehaviour {
                     if (!block.IsSolid)
                         continue;
 
-                    Mesh mesh = block.build(blocks, transform.position, tilesetIndex, tilesetWidth / tilesetDimension);
+                    Mesh mesh = block.build(blocks, chunkGameObject.transform.position, tilesetIndex, tilesetWidth / tilesetDimension);
                     if (mesh != null)
                     {
                         CombineInstance blockMesh = new CombineInstance();
@@ -62,13 +69,18 @@ public class Chunk : MonoBehaviour {
             }
         }
 
+        combineMeshes(blockMeshes.ToArray());
+    }
+
+    private void combineMeshes(CombineInstance[] combineMeshes )
+    {
         Mesh chunkMesh = new Mesh();
         chunkMesh.name = "Chunk";
-        chunkMesh.CombineMeshes(blockMeshes.ToArray());
+        chunkMesh.CombineMeshes(combineMeshes);
         chunkMesh.RecalculateBounds();
 
-        gameObject.AddComponent<MeshRenderer>().material = material;
-        MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
+        chunkGameObject.AddComponent<MeshRenderer>().material = chunkMaterial;
+        MeshFilter meshFilter = chunkGameObject.AddComponent<MeshFilter>();
         meshFilter.mesh = chunkMesh;
     }
 }
