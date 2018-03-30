@@ -19,6 +19,23 @@ public class Chunk {
         }
     }
 
+    private float fBM(float x, float y, int octaves, float persistance)
+    {
+        float total = 0.0f;
+        float frequency = 1;
+        float amplitude = 1;
+        float maxValue = 0;
+        for (int i = 0; i < octaves; i++)
+        {
+            total += Mathf.PerlinNoise(x * frequency * 0.01f, y * frequency * 0.01f) * amplitude;
+            maxValue += amplitude;
+            amplitude += persistance;
+            frequency *= 2;
+        }
+
+        return total / maxValue * 180;
+    }
+
     public Chunk(Vector3 position, Material material, int sizeHorizontal, int sizeVertical)
     {
         chunkGameObject = new GameObject(string.Format("{0}_{1}_{2}", position.x, position.y, position.z) );
@@ -36,8 +53,11 @@ public class Chunk {
             {
                 for (int x = 0; x < sizeHorizontal; x++)
                 {
+                    Vector3 chunkPosition = chunkGameObject.transform.position;
                     Vector3 position = new Vector3(x, y, z);
-                    Block newBlock = new Block(position, Random.value < 0.5f);
+                    float perlin = fBM(chunkPosition.x + x, chunkPosition.z + z, 3, 0.4f);
+
+                    Block newBlock = new Block(position, perlin > chunkPosition.y + y);
                     blocks[x, y, z] = newBlock;
                 }
             }

@@ -5,10 +5,11 @@ using UnityEngine;
 public class World : MonoBehaviour
 {
     [SerializeField]
-    private int chunkSizeHorizontal;
+    private int chunkSize;
 
     [SerializeField]
-    private int chunkSizeVertical;
+    [Range(1, 16)]
+    private int worldSize = 1;
 
     [SerializeField]
     private int chunkColums = 4;
@@ -30,17 +31,26 @@ public class World : MonoBehaviour
 
     private IEnumerator createChunks()
     {
-        for (int i = 0; i < chunkColums; i++)
+        for (int x = 0; x < worldSize; x++)
         {
-            Vector3 chunkPosition = new Vector3(transform.position.x, chunkSizeVertical * i, transform.position.z);
-            Chunk chunk = new Chunk(chunkPosition, textureAtlas, chunkSizeHorizontal, chunkSizeVertical);
-            chunk.GameObject.transform.parent = transform;
-            chunkHash[chunk.GameObject.name] = chunk;
+            for (int z = 0; z < worldSize; z++)
+            {
+                for (int i = 0; i < chunkColums; i++)
+                {
+                    Vector3 chunkPosition = new Vector3(transform.position.x + x * chunkSize,
+                        transform.position.y + chunkSize * i, 
+                        transform.position.z + z * chunkSize);
+
+                    Chunk chunk = new Chunk(chunkPosition, textureAtlas, chunkSize, chunkSize);
+                    chunk.GameObject.transform.parent = transform;
+                    chunkHash[chunk.GameObject.name] = chunk;
+                }
+            }
         }
 
         foreach (KeyValuePair<string, Chunk> pair in chunkHash)
         {
-            pair.Value.buildMesh(chunkSizeHorizontal, chunkSizeVertical, chunkSizeHorizontal);
+            pair.Value.buildMesh(chunkSize, chunkSize, chunkSize);
         }
 
         yield return null;

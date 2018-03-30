@@ -205,9 +205,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bffa3278a6f219843a24ed5ee789f2c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkSizeHorizontal: 16
-  chunkSizeVertical: 16
-  chunkColums: 16
+  chunkSize: 16
+  worldSize: 3
+  chunkColums: 8
   textureAtlas: {fileID: 2100000, guid: d160876192165fd4f940ea22ab8311d9, type: 2}
 --- !u!4 &1144055469
 Transform:
