@@ -21,7 +21,7 @@ public class Chunk : MonoBehaviour {
         blocks = new Block[width, height, depth];
         
         Mesh chunkMesh = new Mesh();
-        CombineInstance[] blockMeshes = new CombineInstance[width * height * depth];
+        List<CombineInstance> blockMeshes = new List<CombineInstance>();
 
         for (int z = 0; z < depth; z++)
         {
@@ -42,18 +42,24 @@ public class Chunk : MonoBehaviour {
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if(blocks[x, y, z].isSolid)
+                    Block block = blocks[x, y, z];
+                    if (!block.IsSolid)
                         continue;
-                    
-                    int indexCombined = x + y * width + z * height * width;
-                    blockMeshes[indexCombined].mesh = blocks[x, y, z].build(transform, tilesetIndex, tilesetWidth / tilesetDimension);
-                    blockMeshes[indexCombined].transform = Matrix4x4.Translate(blocks[x, y, z].Position);
+
+                    Mesh mesh = block.build(blocks, transform.position, tilesetIndex, tilesetWidth / tilesetDimension);
+                    if (mesh != null)
+                    {
+                        CombineInstance blockMesh = new CombineInstance();
+                        blockMesh.mesh = mesh;
+                        blockMesh.transform = Matrix4x4.Translate(block.Position);
+                        blockMeshes.Add(blockMesh);
+                    }
                 }
             }
         }
 
         chunkMesh.name = "Chunk";
-        chunkMesh.CombineMeshes(blockMeshes);
+        chunkMesh.CombineMeshes(blockMeshes.ToArray());
         chunkMesh.RecalculateBounds();
 
         gameObject.AddComponent<MeshRenderer>().material = material;
