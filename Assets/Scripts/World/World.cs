@@ -35,10 +35,10 @@ public class World : MonoBehaviour
         {
             for (int z = 0; z < worldSize; z++)
             {
-                for (int i = 0; i < chunkColums; i++)
+                for (int y = 0; y < chunkColums; y++)
                 {
                     Vector3 chunkPosition = new Vector3(transform.position.x + x * chunkSize,
-                        transform.position.y + chunkSize * i, 
+                        transform.position.y + y * chunkSize, 
                         transform.position.z + z * chunkSize);
 
                     Chunk chunk = new Chunk(chunkPosition, textureAtlas, chunkSize, chunkSize);
