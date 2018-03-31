@@ -45,10 +45,11 @@ public class Chunk {
                 {
                     Vector3 chunkPosition = chunkGameObject.transform.position;
                     Vector3 position = new Vector3(x, y, z);
-                    float perlin = Perlin.fractalBrownianMotion(chunkPosition.x + x, chunkPosition.z + z, 4, 0.5f);
-                    perlin *= 64;
+                    float cavePerlin = Perlin.cavePerlin(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z);
+                    float heightPerlin = Perlin.fractalBrownianMotion(chunkPosition.x + x, chunkPosition.z + z, 4, 0.5f);
+                    heightPerlin *= 64;
 
-                    Block newBlock = new Block(position, perlin > chunkPosition.y + y);
+                    Block newBlock = new Block(position, cavePerlin < 0.45f || heightPerlin > chunkPosition.y + y);
                     blocks[x, y, z] = newBlock;
                 }
             }
