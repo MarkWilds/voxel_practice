@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ public class Chunk {
     private GameObject chunkGameObject;
     private Material chunkMaterial;
 
+    private MeshBuilder meshBuilder;
+
     public GameObject GameObject
     {
         get
@@ -19,29 +22,16 @@ public class Chunk {
         }
     }
 
-    private float fBM(float x, float y, int octaves, float persistance)
-    {
-        float total = 0.0f;
-        float frequency = 1;
-        float amplitude = 1;
-        float maxValue = 0;
-        for (int i = 0; i < octaves; i++)
-        {
-            total += Mathf.PerlinNoise(x * frequency * 0.01f, y * frequency * 0.01f) * amplitude;
-            maxValue += amplitude;
-            amplitude += persistance;
-            frequency *= 2;
-        }
-
-        return total / maxValue * 180;
-    }
-
     public Chunk(Vector3 position, Material material, int sizeHorizontal, int sizeVertical)
     {
         chunkGameObject = new GameObject(string.Format("{0}_{1}_{2}", position.x, position.y, position.z) );
         chunkGameObject.transform.position = position;
         chunkMaterial = material;
         buildData(sizeHorizontal, sizeVertical);
+
+        meshBuilder = new MeshBuilder();
+        meshBuilder.TileIndex = 250;
+        meshBuilder.TileSizeUV = 32 / 512.0f;
     }
 
     private void buildData(int sizeHorizontal, int sizeVertical)
@@ -55,7 +45,8 @@ public class Chunk {
                 {
                     Vector3 chunkPosition = chunkGameObject.transform.position;
                     Vector3 position = new Vector3(x, y, z);
-                    float perlin = fBM(chunkPosition.x + x, chunkPosition.z + z, 3, 0.4f);
+                    float perlin = Perlin.fractalBrownianMotion(chunkPosition.x + x, chunkPosition.z + z, 4, 0.5f);
+                    perlin *= 64;
 
                     Block newBlock = new Block(position, perlin > chunkPosition.y + y);
                     blocks[x, y, z] = newBlock;
@@ -77,12 +68,12 @@ public class Chunk {
                     if (!block.IsSolid)
                         continue;
 
-                    Mesh mesh = block.build(blocks, chunkGameObject.transform.position, tilesetIndex, tilesetWidth / tilesetDimension);
+                    Mesh mesh = buildBlock(block);
                     if (mesh != null)
                     {
                         CombineInstance blockMesh = new CombineInstance();
                         blockMesh.mesh = mesh;
-                        blockMesh.transform = Matrix4x4.Translate(block.Position);
+                        blockMesh.transform = chunkGameObject.transform.localToWorldMatrix * Matrix4x4.Translate(block.Position);
                         blockMeshes.Add(blockMesh);
                     }
                 }
@@ -102,5 +93,52 @@ public class Chunk {
         chunkGameObject.AddComponent<MeshRenderer>().material = chunkMaterial;
         MeshFilter meshFilter = chunkGameObject.AddComponent<MeshFilter>();
         meshFilter.mesh = chunkMesh;
+    }
+
+    public Mesh buildBlock(Block block)
+    {
+        List<CombineInstance> combineList = new List<CombineInstance>();
+
+        createBlockSide(block.Position, Vector3.back, combineList);
+        createBlockSide(block.Position, Vector3.forward, combineList);
+        createBlockSide(block.Position, Vector3.left, combineList);
+        createBlockSide(block.Position, Vector3.right, combineList);
+        createBlockSide(block.Position, Vector3.down, combineList);
+        createBlockSide(block.Position, Vector3.up, combineList);
+
+        if (combineList.Count <= 0)
+            return null;
+
+        Mesh cubeMesh = new Mesh();
+        cubeMesh.CombineMeshes(combineList.ToArray());
+
+        return cubeMesh;
+    }
+
+    private void createBlockSide(Vector3 position, Vector3 sideNormal, List<CombineInstance> combineList)
+    {
+        if (!hasSolidNeightbour(position + sideNormal))
+        {
+            CombineInstance combine = new CombineInstance();
+            combine.transform = Matrix4x4.Translate(position);
+            combine.mesh = meshBuilder.createQuad(sideNormal);
+            combineList.Add(combine);
+        } 
+    }
+
+    /// <summary>
+    /// HACKY, dont use exceptions to regulate flow.... :P bad Mark
+    /// </summary>
+    private bool hasSolidNeightbour(Vector3 coordinates)
+    {
+        try
+        {
+            return blocks[(int) coordinates.x, (int) coordinates.y, (int) coordinates.z].IsSolid;
+        }
+        catch (Exception ex)
+        {
+        }
+
+        return false;
     }
 }

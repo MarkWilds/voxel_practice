@@ -207,7 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkSize: 16
   worldSize: 3
-  chunkColums: 8
+  chunkColums: 4
   textureAtlas: {fileID: 2100000, guid: d160876192165fd4f940ea22ab8311d9, type: 2}
 --- !u!4 &1144055469
 Transform:
