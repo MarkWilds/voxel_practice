@@ -26,16 +26,15 @@ public class Perlin
         return total / maxValue;
     }
 
-    public static float cavePerlin(float x, float y, float z)
+    public static float cavePerlin(float x, float y, float z, int octave, float smooth)
     {
-        float smoothness = 0.01f;
-        float xy = fractalBrownianMotion(x, y, 3, 0.5f, smoothness);
-        float yx = fractalBrownianMotion(y, x, 3, 0.5f, smoothness);
-        float xz = fractalBrownianMotion(x, z, 3, 0.5f, smoothness);
+        float xy = fractalBrownianMotion(x, y, octave, 0.5f, smooth);
+        float yx = fractalBrownianMotion(y, x, octave, 0.5f, smooth);
+        float xz = fractalBrownianMotion(x, z, octave, 0.5f, smooth);
 
-        float zx = fractalBrownianMotion(z, x, 3, 0.5f, smoothness);
-        float zy = fractalBrownianMotion(z, y, 3, 0.5f, smoothness);
-        float yz = fractalBrownianMotion(y, z, 3, 0.5f, smoothness);
+        float zx = fractalBrownianMotion(z, x, octave, 0.5f, smooth);
+        float zy = fractalBrownianMotion(z, y, octave, 0.5f, smooth);
+        float yz = fractalBrownianMotion(y, z, octave, 0.5f, smooth);
 
         return (xy + yx + xz + zx + zy + yz) / 6.0f;
     }

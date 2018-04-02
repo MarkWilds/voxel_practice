@@ -45,11 +45,12 @@ public class Chunk {
                 {
                     Vector3 chunkPosition = chunkGameObject.transform.position;
                     Vector3 position = new Vector3(x, y, z);
-                    float cavePerlin = Perlin.cavePerlin(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z);
+                    float cavePerlin = Perlin.cavePerlin(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z, 3, 0.01f);
                     float heightPerlin = Perlin.fractalBrownianMotion(chunkPosition.x + x, chunkPosition.z + z, 4, 0.5f);
                     heightPerlin *= 64;
 
-                    Block newBlock = new Block(position, cavePerlin < 0.45f || heightPerlin > chunkPosition.y + y);
+                    bool isSolid = cavePerlin < 0.45f || heightPerlin > chunkPosition.y + y;
+                    Block newBlock = new Block(position, isSolid, "block");
                     blocks[x, y, z] = newBlock;
                 }
             }
@@ -69,7 +70,7 @@ public class Chunk {
                     if (!block.IsSolid)
                         continue;
 
-                    Mesh mesh = buildBlock(block);
+                    Mesh mesh = buildBlockMesh(block);
                     if (mesh != null)
                     {
                         CombineInstance blockMesh = new CombineInstance();
@@ -96,16 +97,16 @@ public class Chunk {
         meshFilter.mesh = chunkMesh;
     }
 
-    public Mesh buildBlock(Block block)
+    public Mesh buildBlockMesh(Block block)
     {
         List<CombineInstance> combineList = new List<CombineInstance>();
 
-        createBlockSide(block.Position, Vector3.back, combineList);
-        createBlockSide(block.Position, Vector3.forward, combineList);
-        createBlockSide(block.Position, Vector3.left, combineList);
-        createBlockSide(block.Position, Vector3.right, combineList);
-        createBlockSide(block.Position, Vector3.down, combineList);
-        createBlockSide(block.Position, Vector3.up, combineList);
+        createBlockSideMesh(block.Position, Vector3.back, combineList);
+        createBlockSideMesh(block.Position, Vector3.forward, combineList);
+        createBlockSideMesh(block.Position, Vector3.left, combineList);
+        createBlockSideMesh(block.Position, Vector3.right, combineList);
+        createBlockSideMesh(block.Position, Vector3.down, combineList);
+        createBlockSideMesh(block.Position, Vector3.up, combineList);
 
         if (combineList.Count <= 0)
             return null;
@@ -116,7 +117,7 @@ public class Chunk {
         return cubeMesh;
     }
 
-    private void createBlockSide(Vector3 position, Vector3 sideNormal, List<CombineInstance> combineList)
+    private void createBlockSideMesh(Vector3 position, Vector3 sideNormal, List<CombineInstance> combineList)
     {
         if (!hasSolidNeightbour(position + sideNormal))
         {
