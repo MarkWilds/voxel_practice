@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Chunk {
     public int tilesetWidth = 16;
@@ -14,6 +15,15 @@ public class Chunk {
 
     private MeshBuilder meshBuilder;
 
+    public enum ChunkState
+    {
+        OLD,
+        CURRENT,
+        NEW
+    }
+    
+    public ChunkState State { get; set; }
+
     public GameObject GameObject
     {
         get
@@ -22,9 +32,14 @@ public class Chunk {
         }
     }
 
+    public static string getChunkIdentifier(Vector3 position)
+    {
+        return string.Format("{0}_{1}_{2}", position.x, position.y, position.z);
+    }
+
     public Chunk(Vector3 position, Material material, int sizeHorizontal, int sizeVertical)
     {
-        chunkGameObject = new GameObject(string.Format("{0}_{1}_{2}", position.x, position.y, position.z) );
+        chunkGameObject = new GameObject(getChunkIdentifier(position));
         chunkGameObject.transform.position = position;
         chunkMaterial = material;
         buildData(sizeHorizontal, sizeVertical);
@@ -46,10 +61,10 @@ public class Chunk {
                     Vector3 chunkPosition = chunkGameObject.transform.position;
                     Vector3 position = new Vector3(x, y, z);
                     float cavePerlin = Perlin.cavePerlin(chunkPosition.x + x, chunkPosition.y + y, chunkPosition.z + z, 3, 0.01f);
-                    float heightPerlin = Perlin.fractalBrownianMotion(chunkPosition.x + x, chunkPosition.z + z, 4, 0.5f);
+                    float heightPerlin = Perlin.fractalBrownianMotion(chunkPosition.x + x, chunkPosition.z + z, 3, 0.5f);
                     heightPerlin *= 64;
 
-                    bool isSolid = cavePerlin < 0.45f || heightPerlin > chunkPosition.y + y;
+                    bool isSolid =  heightPerlin > chunkPosition.y + y; // cavePerlin < 0.45f ||
                     Block newBlock = new Block(position, isSolid, "block");
                     blocks[x, y, z] = newBlock;
                 }
@@ -59,6 +74,7 @@ public class Chunk {
 
     public void buildMesh( int width, int height, int depth)
     {
+        State = Chunk.ChunkState.CURRENT;
         List<CombineInstance> blockMeshes = new List<CombineInstance>();
         for (int z = 0; z < depth; z++)
         {
@@ -75,7 +91,7 @@ public class Chunk {
                     {
                         CombineInstance blockMesh = new CombineInstance();
                         blockMesh.mesh = mesh;
-                        blockMesh.transform = chunkGameObject.transform.localToWorldMatrix * Matrix4x4.Translate(block.Position);
+                        blockMesh.transform = Matrix4x4.Translate(block.Position);
                         blockMeshes.Add(blockMesh);
                     }
                 }
@@ -83,6 +99,8 @@ public class Chunk {
         }
 
         combineMeshes(blockMeshes.ToArray());
+        MeshCollider collider = GameObject.AddComponent<MeshCollider>();
+        collider.sharedMesh = chunkGameObject.GetComponent<MeshFilter>().mesh;
     }
 
     private void combineMeshes(CombineInstance[] combineMeshes )
